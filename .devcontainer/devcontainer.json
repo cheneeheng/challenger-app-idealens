@@ -20,6 +20,7 @@
   "mounts": [
     // "source=${localEnv:USERPROFILE}/.gemini,target=/home/ubuntu/.gemini,type=bind",
     "source=${localEnv:USERPROFILE}/.claude_devcontainer,target=/home/ubuntu/.claude,type=bind",
+    "source=${localEnv:USERPROFILE}/.claude_devcontainer.json,target=/home/ubuntu/.claude.json,type=bind",
     "source=${localEnv:USERPROFILE}/.ssh,target=/home/ubuntu/.ssh,type=bind"
   ],
 
