@@ -1,6 +1,7 @@
 export interface User {
   id: string;
   email: string;
+  display_name?: string | null;
   has_api_key: boolean;
   created_at: string;
 }
