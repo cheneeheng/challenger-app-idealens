@@ -117,15 +117,12 @@ Format:
 
 System messages are displayed in the chat as centered italic muted text (already handled by `MessageBubble` from ITER_04 — `role === "system"` renders as italic muted).
 
-To persist: call `POST /api/sessions/:id/messages` — **wait**, there is no separate messages endpoint. Instead, send a system message through the chat endpoint would require LLM invocation. The correct approach: persist system messages directly by extending the backend.
+To persist: call `POST /api/sessions/:id/messages` (the endpoint defined in §04 above). This call does **not** go through the LLM — it is purely a persistence write for the user-action audit trail:
 
-**Backend addition (small):** Add `POST /api/sessions/:id/messages` endpoint:
 ```python
 # Accepts: { role: "system", content: str }
 # Creates a Message record; returns the saved message
 ```
-
-This endpoint does not go through the LLM — it is purely a persistence call for user-action audit trail messages.
 
 ### 5. Inline Session Rename (`src/components/AppHeader.tsx`)
 

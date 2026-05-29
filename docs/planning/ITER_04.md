@@ -220,19 +220,19 @@ async function sendMessage(text: string) {
     accessToken,
     {
       onToken: (t) => chatStore.appendToken(t),
-      onGraphAction: (a) => graphStore.applyAction(a),  // stub in this iter
+      onGraphAction: (a) => graphStore.applyGraphActions([a]),  // no-op stub in this iter
       onError: (msg) => toast.error(msg),
       onDone: () => {
         chatStore.finalizeStreamingMessage();
         chatStore.setStreaming(false);
-        sessionStore.saveGraph(session_id, graphStore.state);
+        sessionStore.saveGraph(session_id, graphStore.toPayload());
       },
     }
   );
 }
 ```
 
-`graphStore.applyAction` is a no-op stub in this iteration — wired in ITER_05.
+`graphStore.applyGraphActions` is a no-op stub in this iteration — wired in ITER_05.
 
 ---
 
