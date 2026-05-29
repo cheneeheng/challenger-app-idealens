@@ -62,7 +62,7 @@ API docs at http://localhost:8000/docs, liveness at http://localhost:8000/health
 | `DATABASE_URL` | Async PostgreSQL DSN (`postgresql+asyncpg://...`) |
 | `JWT_SECRET` | Secret for signing access tokens |
 | `API_KEY_ENCRYPTION_KEY` | Fernet key for encrypting Anthropic keys at rest |
-| `ENVIRONMENT` | `development` or `production` |
+| `ENVIRONMENT` | `development` or `production`; `production` enables the `Secure` flag on the refresh-token cookie |
 | `FRONTEND_URLS` | Comma-separated allowed CORS origins |
 | `CONTEXT_WINDOW_MAX_MESSAGES` | Recent messages kept verbatim before summarization (default `20`) |
 

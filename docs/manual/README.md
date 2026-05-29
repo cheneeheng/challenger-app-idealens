@@ -14,6 +14,8 @@ see the [project README](../../README.md).
 3. [The Graph](graph.md) — the nine dimensions, node types, toolbar, and interactions.
 4. [Account & API Key](account.md) — settings, password, API key, and deleting your account.
 5. [FAQ & Troubleshooting](faq.md) — common questions and how to fix common problems.
+6. [Deployment & Running the App](deployment.md) — for operators: start the app locally, run it
+   in production, and what every environment variable is for.
 
 ## What you need
 
