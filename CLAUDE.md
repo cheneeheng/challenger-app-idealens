@@ -23,11 +23,11 @@ alembic revision --autogenerate -m "msg"             # new migration
 
 Frontend (from `frontend/`):
 ```bash
-npm install
-npm run dev            # :3000
-npm run build          # tsc -b && vite build (type-check gate)
-npm test               # vitest
-npm test -- <pattern>  # single test file/pattern
+bun install
+bun run dev            # :3000
+bun run build          # tsc -b && vite build (type-check gate)
+bun run test           # vitest (NOT `bun test` — that runs bun's builtin runner, not vitest)
+bun run test <pattern> # single test file/pattern
 ```
 
 ## Architecture

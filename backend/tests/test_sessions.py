@@ -67,3 +67,51 @@ async def test_ownership_returns_403(auth_client, client):
 
     resp = await auth_client.get(f"/api/sessions/{sid}")
     assert resp.status_code == 403
+
+
+async def test_create_message_assigns_incrementing_index(auth_client):
+    created = await auth_client.post("/api/sessions", json={"idea": "audit"})
+    sid = created.json()["id"]
+
+    first = await auth_client.post(
+        f"/api/sessions/{sid}/messages",
+        json={"role": "system", "content": "[User action: added node]"},
+    )
+    assert first.status_code == 201
+    assert first.json()["role"] == "system"
+    assert first.json()["message_index"] == 0
+
+    second = await auth_client.post(
+        f"/api/sessions/{sid}/messages",
+        json={"role": "system", "content": "[User action: edited node]"},
+    )
+    assert second.json()["message_index"] == 1
+
+    # The persisted messages surface on the session detail.
+    detail = await auth_client.get(f"/api/sessions/{sid}")
+    assert len(detail.json()["messages"]) == 2
+
+
+async def test_create_message_rejects_non_system_role(auth_client):
+    created = await auth_client.post("/api/sessions", json={"idea": "roles"})
+    sid = created.json()["id"]
+    resp = await auth_client.post(
+        f"/api/sessions/{sid}/messages",
+        json={"role": "user", "content": "should be rejected"},
+    )
+    assert resp.status_code == 422
+
+
+async def test_create_message_ownership_returns_403(auth_client, client):
+    token2 = await _register(client, "msg-user2@example.com")
+    created = await client.post(
+        "/api/sessions",
+        json={"idea": "other user idea"},
+        headers={"Authorization": f"Bearer {token2}"},
+    )
+    sid = created.json()["id"]
+    resp = await auth_client.post(
+        f"/api/sessions/{sid}/messages",
+        json={"role": "system", "content": "intruder"},
+    )
+    assert resp.status_code == 403

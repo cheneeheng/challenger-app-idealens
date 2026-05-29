@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useChatStore } from "../stores/chatStore";
 
 interface ChatInputProps {
   onSend: (text: string) => void;
@@ -6,26 +6,42 @@ interface ChatInputProps {
 }
 
 export default function ChatInput({ onSend, disabled }: ChatInputProps) {
-  const [text, setText] = useState("");
+  const draft = useChatStore((s) => s.draft);
+  const setDraft = useChatStore((s) => s.setDraft);
 
   const submit = () => {
-    const trimmed = text.trim();
-    if (!trimmed) return;
+    const trimmed = draft.trim();
+    if (!trimmed || disabled) return;
     onSend(trimmed);
-    setText("");
+    setDraft("");
   };
 
   return (
     <div style={{ display: "flex", gap: "0.5rem", padding: "0.75rem", borderTop: "1px solid #ddd" }}>
-      <input
-        style={{ flex: 1, padding: "0.5rem" }}
-        value={text}
+      <textarea
+        style={{
+          flex: 1,
+          padding: "0.5rem",
+          resize: "none",
+          overflowY: "auto",
+          maxHeight: 160,
+          minHeight: 40,
+          fontFamily: "inherit",
+          fontSize: "0.9rem",
+        }}
+        rows={2}
+        value={draft}
         placeholder="Describe your idea..."
         disabled={disabled}
-        onChange={(e) => setText(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && submit()}
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            submit();
+          }
+        }}
       />
-      <button onClick={submit} disabled={disabled}>
+      <button onClick={submit} disabled={disabled || !draft.trim()}>
         Send
       </button>
     </div>

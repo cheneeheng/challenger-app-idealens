@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
+from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.core.llm_models import DEFAULT_MODEL
 
@@ -15,6 +16,12 @@ class SessionCreate(BaseModel):
 class SessionUpdate(BaseModel):
     name: str | None = None
     selected_model: str | None = None
+
+
+class MessageCreate(BaseModel):
+    # Pure audit-trail write for user-initiated graph mutations — no LLM call.
+    role: Literal["system"]
+    content: str = Field(min_length=1)
 
 
 class MessageResponse(BaseModel):
@@ -32,6 +39,7 @@ class SessionSummary(BaseModel):
 
     id: uuid.UUID
     name: str
+    idea: str
     selected_model: str
     updated_at: datetime
 
