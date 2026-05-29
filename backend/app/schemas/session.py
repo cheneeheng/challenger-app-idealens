@@ -39,6 +39,7 @@ class SessionSummary(BaseModel):
 
     id: uuid.UUID
     name: str
+    idea: str
     selected_model: str
     updated_at: datetime
 

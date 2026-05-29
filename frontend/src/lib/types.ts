@@ -32,6 +32,7 @@ export interface ChatMessage {
 export interface SessionSummary {
   id: string;
   name: string;
+  idea: string;
   selected_model: string;
   updated_at: string;
 }

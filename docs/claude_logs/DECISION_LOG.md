@@ -113,3 +113,31 @@ implemented on branch `feat/iter-04-06-workspace-graph`. Tests written for the n
 backend endpoint and the core frontend logic (graphStore, graphLayout, chatStore, time).
 Per the contract, tests/type-check were not run — frontend `node_modules` and the backend
 `.venv` are not installed in this environment and execution was not requested.
+
+### Entry — Review against plan (ITER_04–06)
+
+**Type:** Decision
+**Mode:** Autonomous
+**Timestamp:** 2026-05-29T00:00:00Z
+**Task:** review-against-plan audit of ITER_04–06 (sections §03, §04, §05).
+
+**Context:** Audit found one gap. ITER_04 §05.6 specifies `SessionCard` "Shows: session
+name, idea excerpt (truncated to ~80 chars), model badge, relative timestamp." A prior
+decision-log entry deliberately omitted the idea excerpt, reasoning that `name` defaults
+to the truncated idea (`name = payload.name or payload.idea[:60]`) so the two collapse.
+That reasoning fails after ITER_06's inline session rename: once renamed, `name` diverges
+from `idea`, and the spec lists name and idea excerpt as distinct fields. The excerpt was
+also unsatisfiable because `SessionSummary` (the list endpoint payload) did not carry `idea`.
+
+**Decision:** Superseded the prior omission. Exposed the existing `Session.idea` column on
+`SessionSummary` (backend schema + frontend type + `toSummary` mapping) and rendered a
+~80-char truncated excerpt in `SessionCard`. This crosses into §02/§04 (marked unchanged
+this iteration), but it is a minimal additive read-field change and is the only way to
+satisfy the in-scope §05 spec; the model and `SessionDetail` already expose `idea`.
+
+**Impact / Risk:** Low. Additive field on a read response; no migration (column exists),
+no behavior change elsewhere. No sessionStore test asserts the summary shape.
+
+**Outcome:** SessionCard now matches ITER_04 §05.6. All other §03/§04/§05 items across
+ITER_04–06 verified present and faithful to spec. Type-check/build not run per the
+agent-coding-contract hard rule (validation not explicitly requested).

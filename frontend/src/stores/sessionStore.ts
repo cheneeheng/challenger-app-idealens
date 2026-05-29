@@ -25,6 +25,7 @@ function toSummary(detail: SessionDetail): SessionSummary {
   return {
     id: detail.id,
     name: detail.name,
+    idea: detail.idea,
     selected_model: detail.selected_model,
     updated_at: detail.updated_at,
   };

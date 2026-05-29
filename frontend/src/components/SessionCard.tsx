@@ -28,6 +28,9 @@ export default function SessionCard({ session, onDelete }: SessionCardProps) {
       }}
     >
       <div style={{ fontWeight: 600, marginRight: "1.5rem" }}>{session.name}</div>
+      <p style={{ fontSize: "0.8rem", color: "#666", marginTop: "0.4rem", marginBottom: 0 }}>
+        {session.idea.length > 80 ? `${session.idea.slice(0, 80)}…` : session.idea}
+      </p>
       <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.5rem" }}>
         <span
           style={{
