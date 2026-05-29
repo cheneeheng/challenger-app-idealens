@@ -3,11 +3,13 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
+from app.core.llm_models import DEFAULT_MODEL
+
 
 class SessionCreate(BaseModel):
-    name: str
-    idea: str = ""
-    selected_model: str
+    idea: str
+    name: str | None = None
+    selected_model: str = DEFAULT_MODEL
 
 
 class SessionUpdate(BaseModel):

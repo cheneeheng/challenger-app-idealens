@@ -1,15 +1,25 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.routes import auth, chat, models, sessions, users
 from app.core.config import get_settings
 
 settings = get_settings()
 limiter = Limiter(key_func=get_remote_address)
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "no-referrer"
+        return response
 
 
 @asynccontextmanager
@@ -22,6 +32,10 @@ def create_app() -> FastAPI:
     app = FastAPI(title="IdeaLens API", version="0.1.0", lifespan=lifespan)
     app.state.limiter = limiter
 
+    # Registration order matters: Starlette applies middleware in reverse, so
+    # SecurityHeaders (registered first) is innermost and CORS is outermost.
+    # CORS must be outermost to answer preflight OPTIONS before any auth runs.
+    app.add_middleware(SecurityHeadersMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
