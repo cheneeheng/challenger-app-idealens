@@ -1,10 +1,11 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Cookie, HTTPException, Response, status
+from fastapi import APIRouter, Cookie, HTTPException, Request, Response, status
 from sqlalchemy import select, update
 
 from app.api.deps import DbSession
 from app.core.config import get_settings
+from app.core.rate_limit import limiter
 from app.db.models.refresh_token import RefreshToken
 from app.db.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
@@ -45,7 +46,10 @@ async def _issue_refresh_token(db: DbSession, user_id, response: Response) -> No
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(payload: RegisterRequest, response: Response, db: DbSession) -> TokenResponse:
+@limiter.limit("5/15minutes")
+async def register(
+    payload: RegisterRequest, response: Response, db: DbSession, request: Request
+) -> TokenResponse:
     existing = await db.scalar(select(User).where(User.email == payload.email))
     if existing is not None:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
@@ -61,7 +65,10 @@ async def register(payload: RegisterRequest, response: Response, db: DbSession) 
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(payload: LoginRequest, response: Response, db: DbSession) -> TokenResponse:
+@limiter.limit("10/15minutes")
+async def login(
+    payload: LoginRequest, response: Response, db: DbSession, request: Request
+) -> TokenResponse:
     user = await db.scalar(select(User).where(User.email == payload.email))
     if user is None or not auth_service.verify_password(payload.password, user.password_hash):
         raise HTTPException(

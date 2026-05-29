@@ -8,6 +8,7 @@ export interface AnalysisNodeData {
   content: string;
   score?: number | null;
   userPositioned?: boolean;
+  justUpdated?: boolean; // set briefly after an `update` action to trigger a highlight pulse
   [key: string]: unknown; // React Flow requires node data to be an index signature
 }
 

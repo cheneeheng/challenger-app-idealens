@@ -49,6 +49,18 @@ export default function GraphPanel() {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [menu, setMenu] = useState<ContextMenuState | null>(null);
 
+  // Cmd/Ctrl+Shift+L fits the graph to the viewport (ITER_07 §05.6).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && (e.key === "L" || e.key === "l")) {
+        e.preventDefault();
+        void fitView({ duration: 400, padding: 0.1 });
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fitView]);
+
   // Fit the view after nodes are added (positions committed first via a delay).
   const prevNodeCount = useRef(nodes.length);
   useEffect(() => {

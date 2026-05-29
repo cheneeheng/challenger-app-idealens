@@ -25,3 +25,53 @@ body {
     opacity: 0;
   }
 }
+
+/* Graph node animations (ITER_07 §05.1) */
+@keyframes nodeEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes nodePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 8px rgba(99, 102, 241, 0);
+  }
+}
+
+.analysis-node {
+  animation: nodeEnter 250ms ease-out;
+}
+
+.analysis-node.node-updated {
+  animation:
+    nodeEnter 250ms ease-out,
+    nodePulse 2s ease-out;
+}
+
+/* Loading skeletons (ITER_07 §05.2) */
+@keyframes shimmer {
+  from {
+    background-position: -200px 0;
+  }
+  to {
+    background-position: 200px 0;
+  }
+}
+
+.skeleton {
+  background: #eee;
+  background-image: linear-gradient(90deg, #eee 0px, #f5f5f5 40px, #eee 80px);
+  background-size: 200px 100%;
+  background-repeat: no-repeat;
+  animation: shimmer 1.2s ease-in-out infinite;
+  border-radius: 4px;
+}

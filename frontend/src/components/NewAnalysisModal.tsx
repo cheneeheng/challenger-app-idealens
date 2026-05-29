@@ -37,6 +37,16 @@ export default function NewAnalysisModal({ open, onClose }: NewAnalysisModalProp
     };
   }, []);
 
+  // Close on Escape while open (ITER_07 §05.6).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   async function handleSubmit() {

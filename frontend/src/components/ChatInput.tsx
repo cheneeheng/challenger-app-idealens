@@ -35,7 +35,10 @@ export default function ChatInput({ onSend, disabled }: ChatInputProps) {
         disabled={disabled}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter" && !e.shiftKey) {
+          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+            e.preventDefault();
+            submit();
+          } else if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
             submit();
           }

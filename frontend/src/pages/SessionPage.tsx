@@ -7,6 +7,8 @@ import AppHeader from "../components/AppHeader";
 import ChatPanel from "../components/ChatPanel";
 import GraphPanel from "../components/GraphPanel";
 import SplitLayout from "../components/SplitLayout";
+import WorkspaceErrorBoundary from "../components/WorkspaceErrorBoundary";
+import WorkspaceSkeleton from "../components/WorkspaceSkeleton";
 import { useSendMessage } from "../hooks/useChat";
 import { getApiErrorMessage } from "../lib/errors";
 import { useChatStore } from "../stores/chatStore";
@@ -68,14 +70,20 @@ export default function SessionPage() {
           if (id) void updateSession(id, { name });
         }}
       />
-      <SplitLayout
-        left={<ChatPanel />}
-        right={
-          <ReactFlowProvider>
-            <GraphPanel />
-          </ReactFlowProvider>
-        }
-      />
+      {currentSession ? (
+        <WorkspaceErrorBoundary>
+          <SplitLayout
+            left={<ChatPanel />}
+            right={
+              <ReactFlowProvider>
+                <GraphPanel />
+              </ReactFlowProvider>
+            }
+          />
+        </WorkspaceErrorBoundary>
+      ) : (
+        <WorkspaceSkeleton />
+      )}
     </div>
   );
 }

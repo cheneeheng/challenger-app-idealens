@@ -18,4 +18,9 @@ build/
 *.db
 .DS_Store
 
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
 .claude/settings.local.json

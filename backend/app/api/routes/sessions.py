@@ -1,9 +1,10 @@
 import uuid
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Request, status
 from sqlalchemy import func, select
 
 from app.api.deps import CurrentUser, DbSession
+from app.core.rate_limit import limiter
 from app.db.models.message import Message
 from app.db.models.session import Session
 from app.schemas.session import (
@@ -49,7 +50,9 @@ async def _get_owned_session(session_id: uuid.UUID, user, db: DbSession) -> Sess
 
 
 @router.get("", response_model=SessionListResponse)
+@limiter.limit("60/minute")
 async def list_sessions(
+    request: Request,
     user: CurrentUser,
     db: DbSession,
     page: int = Query(1, ge=1),
