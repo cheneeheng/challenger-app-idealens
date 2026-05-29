@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Cookie, HTTPException, Response, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.api.deps import DbSession
 from app.core.config import get_settings
@@ -68,6 +68,12 @@ async def login(payload: LoginRequest, response: Response, db: DbSession) -> Tok
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid email or password"
         )
 
+    # Rotate: revoke any active refresh tokens before issuing a fresh one.
+    await db.execute(
+        update(RefreshToken)
+        .where(RefreshToken.user_id == user.id, RefreshToken.revoked.is_(False))
+        .values(revoked=True)
+    )
     await _issue_refresh_token(db, user.id, response)
     await db.commit()
 
