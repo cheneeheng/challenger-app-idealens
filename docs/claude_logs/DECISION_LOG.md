@@ -114,7 +114,7 @@ backend endpoint and the core frontend logic (graphStore, graphLayout, chatStore
 Per the contract, tests/type-check were not run — frontend `node_modules` and the backend
 `.venv` are not installed in this environment and execution was not requested.
 
-### Entry — Review against plan (ITER_04–06)
+### Entry — 004
 
 **Type:** Decision
 **Mode:** Autonomous
@@ -161,3 +161,18 @@ agent-coding-contract hard rule (validation not explicitly requested).
 **Impact / Risk:** Low–moderate. Rate limiting is now enforced in non-test runs; the test disable keeps the existing suite green. No schema/migration changes. E2E selectors were written against the current UI and may need adjustment as the app evolves.
 
 **Outcome:** All ITER_07 §04/§05 items implemented. Tests/build not run per the agent-coding-contract hard rule (validation not explicitly requested).
+
+### Entry 006
+
+**Type:** Decision
+**Mode:** Autonomous
+**Timestamp:** 2026-05-29
+**Task:** Update README and create end-user manuals under docs.
+
+**Context:** The request specified "a folder under docs" without naming it, the file split, or the audience scope. README status block was stale (claimed skeleton/501 stubs) and used `npm` despite the project's `bun` convention.
+**Decision:**
+1. Created manuals at `docs/manual/` (sibling to `docs/planning/`), split into reader-task files: `README.md` (index), `getting-started.md`, `workspace.md`, `graph.md`, `account.md`, `faq.md`. Wrote them as end-user (not developer) docs, since "user manuals" implies the person using the app.
+2. README: replaced the "Skeleton scaffold / stubbed 501" status with a "Functional (ITER 01–07)" status plus a Features section; switched frontend/test commands from `npm` to `bun` (and added `test:e2e`); added a Documentation section pointing to `docs/manual/` and `/docs`.
+
+**Impact / Risk:** Docs-only; no code or config changed. Manual content reflects current behavior (nine dimensions, model list, rate limit, shortcuts) read from source; will need updates if the UI/flows change.
+**Outcome:** README updated; six manual files created under `docs/manual/`.

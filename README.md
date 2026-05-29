@@ -6,7 +6,18 @@ Users bring their own Anthropic API key (stored encrypted at rest).
 
 ## Status
 
-Skeleton scaffold. Structure, models, schemas, routes, and UI components are in place; route handlers and LLM streaming are stubbed (return `501`) and filled in across later iterations. See `docs/planning/` for the build plan.
+Functional. The backend foundation, analysis engine, frontend workspace, graph visualization, graph interactions, and polish/tests (iterations 01–07) are implemented. See `docs/planning/` for the build plan and `docs/manual/` for end-user guides.
+
+## Features
+
+- Email/password auth with JWT access tokens and refresh-token cookies.
+- Bring-your-own Anthropic API key, encrypted at rest with Fernet.
+- Split-view workspace: streaming chat on the left, live node graph on the right.
+- LLM analysis across nine fixed dimensions (concept, requirements, gaps, benefits, drawbacks, feasibility, flaws, alternatives, open questions).
+- Real-time graph mutations streamed over SSE (`add` / `update` / `delete` / `connect`), with Dagre auto-layout.
+- Selectable model per session (Sonnet / Haiku / Opus); cheaper model used for context summarization.
+- Graph interactions: node detail panel, context menu, manual node add/delete, and a graph-to-chat feedback loop.
+- Session management with rename, pagination, and per-user data isolation.
 
 ## Tech Stack
 
@@ -65,14 +76,21 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 
 ```bash
 cd frontend
-npm install
+bun install
 cp .env.example .env.local    # VITE_API_URL=http://localhost:8000
-npm run dev                    # http://localhost:3000
+bun run dev                    # http://localhost:3000
 ```
 
 ## Tests
 
 ```bash
 cd backend && uv run pytest      # backend (pytest + httpx)
-cd frontend && npm test          # frontend (vitest)
+cd frontend && bun run test      # frontend unit tests (vitest)
+cd frontend && bun run test:e2e  # frontend end-to-end (Playwright)
 ```
+
+## Documentation
+
+- `docs/manual/` — end-user guides (getting started, workspace, graph, account, FAQ).
+- `docs/planning/` — `SKELETON.md` plus `ITER_NN.md` build plan.
+- API reference: http://localhost:8000/docs (OpenAPI) when the backend is running.
