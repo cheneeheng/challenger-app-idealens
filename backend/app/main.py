@@ -2,15 +2,14 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.api.routes import auth, chat, models, sessions, users
 from app.core.config import get_settings
+from app.core.rate_limit import limiter, rate_limit_exceeded_handler
 
 settings = get_settings()
-limiter = Limiter(key_func=get_remote_address)
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
@@ -31,6 +30,7 @@ async def lifespan(app: FastAPI):
 def create_app() -> FastAPI:
     app = FastAPI(title="IdeaLens API", version="0.1.0", lifespan=lifespan)
     app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
 
     # Registration order matters: Starlette applies middleware in reverse, so
     # SecurityHeaders (registered first) is innermost and CORS is outermost.

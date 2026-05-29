@@ -6,6 +6,7 @@ from fastapi.responses import StreamingResponse
 
 from app.api.deps import CurrentUser, DbSession
 from app.core.config import get_settings
+from app.core.rate_limit import limiter
 from app.core.llm_models import SUMMARY_MODEL
 from app.db.models.message import Message
 from app.db.models.session import Session
@@ -28,6 +29,7 @@ def _sse(event: str, data: dict, event_id: str | None = None) -> str:
 
 
 @router.post("")
+@limiter.limit("30/minute")
 async def chat(payload: ChatRequest, user: CurrentUser, db: DbSession, request: Request):
     """SSE stream of LLM tokens plus graph_action events.
 

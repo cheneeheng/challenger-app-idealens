@@ -20,9 +20,15 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine  # noqa: E4
 from sqlalchemy.pool import NullPool  # noqa: E402
 
 from app.core.config import get_settings  # noqa: E402
+from app.core.rate_limit import limiter  # noqa: E402
 from app.db.models import Base  # noqa: E402
 from app.db.session import get_db  # noqa: E402
 from app.main import app  # noqa: E402
+
+# Rate limiting (ITER_07) keys by remote address; under the in-process test
+# client every request shares one key, so the suite's repeated register/login
+# calls would trip the limits. Disable enforcement for tests.
+limiter.enabled = False
 
 
 @pytest_asyncio.fixture(autouse=True)

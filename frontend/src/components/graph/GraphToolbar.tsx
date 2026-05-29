@@ -1,5 +1,5 @@
 import { useReactFlow } from "@xyflow/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { usePushSystemMessage } from "../../hooks/useChat";
 import { dimensionType, type DimensionType } from "../../lib/graphActions";
@@ -83,6 +83,15 @@ function AddNodeModal({ onClose, onAdded }: { onClose: () => void; onAdded: () =
   const [type, setType] = useState<DimensionType>("concept");
   const [label, setLabel] = useState("");
   const [content, setContent] = useState("");
+
+  // Close on Escape (ITER_07 §05.6).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   function handleSave() {
     if (!label.trim()) return;

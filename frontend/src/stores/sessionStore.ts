@@ -7,14 +7,21 @@ interface SessionState {
   sessions: SessionSummary[];
   currentSession: SessionDetail | null;
   isLoading: boolean;
+  hasMore: boolean; // last fetched page was full → more sessions may exist
 
-  fetchSessions: () => Promise<void>;
+  fetchSessions: (page?: number) => Promise<void>;
   fetchSession: (id: string) => Promise<void>;
   createSession: (idea: string, model: string) => Promise<SessionDetail>;
   updateSession: (id: string, patch: { name?: string; model?: string }) => Promise<void>;
+  removeSessionLocal: (id: string) => void; // optimistic UI removal, no API call
+  restoreSession: (id: string) => Promise<void>; // re-fetch and re-insert (undo)
   deleteSession: (id: string) => Promise<void>;
   saveGraph: (id: string, graphState: GraphStatePayload) => void; // debounced 1s
   reset: () => void;
+}
+
+function sortByUpdatedDesc(sessions: SessionSummary[]): SessionSummary[] {
+  return [...sessions].sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 }
 
 // Module-level debounce handle for saveGraph. Cleared before rescheduling and
@@ -35,12 +42,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   sessions: [],
   currentSession: null,
   isLoading: false,
+  hasMore: false,
 
-  fetchSessions: async () => {
+  fetchSessions: async (page = 1) => {
     set({ isLoading: true });
     try {
-      const res = await api.get("/api/sessions");
-      set({ sessions: res.data.items });
+      const res = await api.get("/api/sessions", { params: { page } });
+      const items = res.data.items as SessionSummary[];
+      const pageSize = res.data.page_size as number;
+      set((state) => ({
+        sessions: page > 1 ? [...state.sessions, ...items] : items,
+        hasMore: items.length === pageSize,
+      }));
     } finally {
       set({ isLoading: false });
     }
@@ -78,6 +91,22 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }));
   },
 
+  removeSessionLocal: (id) =>
+    set((state) => ({
+      sessions: state.sessions.filter((s) => s.id !== id),
+    })),
+
+  restoreSession: async (id) => {
+    const res = await api.get(`/api/sessions/${id}`);
+    const detail = res.data as SessionDetail;
+    set((state) => ({
+      sessions: sortByUpdatedDesc([
+        toSummary(detail),
+        ...state.sessions.filter((s) => s.id !== id),
+      ]),
+    }));
+  },
+
   deleteSession: async (id) => {
     await api.delete(`/api/sessions/${id}`);
     set((state) => ({
@@ -99,6 +128,6 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       clearTimeout(saveTimer);
       saveTimer = null;
     }
-    set({ sessions: [], currentSession: null, isLoading: false });
+    set({ sessions: [], currentSession: null, isLoading: false, hasMore: false });
   },
 }));

@@ -51,6 +51,17 @@ describe("graphStore.applyGraphActions", () => {
     ]);
     expect(useGraphStore.getState().nodes.map((n) => n.id)).toEqual(["good"]);
   });
+
+  it("preserves a userPositioned node's position through a layout pass", () => {
+    useGraphStore.getState().applyGraphActions([addAction("a")]);
+    useGraphStore.getState().setNodePosition("a", { x: 777, y: 555 });
+    // Adding another node triggers computeDagreLayout, which must not move
+    // the pinned node.
+    useGraphStore.getState().applyGraphActions([addAction("b")]);
+    const a = useGraphStore.getState().nodes.find((n) => n.id === "a")!;
+    expect(a.data.userPositioned).toBe(true);
+    expect(a.position).toEqual({ x: 777, y: 555 });
+  });
 });
 
 describe("graphStore.loadGraph", () => {

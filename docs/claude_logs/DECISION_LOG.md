@@ -114,7 +114,7 @@ backend endpoint and the core frontend logic (graphStore, graphLayout, chatStore
 Per the contract, tests/type-check were not run — frontend `node_modules` and the backend
 `.venv` are not installed in this environment and execution was not requested.
 
-### Entry — Review against plan (ITER_04–06)
+### Entry — 004
 
 **Type:** Decision
 **Mode:** Autonomous
@@ -141,3 +141,38 @@ no behavior change elsewhere. No sessionStore test asserts the summary shape.
 **Outcome:** SessionCard now matches ITER_04 §05.6. All other §03/§04/§05 items across
 ITER_04–06 verified present and faithful to spec. Type-check/build not run per the
 agent-coding-contract hard rule (validation not explicitly requested).
+
+### Entry 005
+
+**Type:** Decision
+**Mode:** Autonomous
+**Timestamp:** 2026-05-29
+**Task:** Implement ITER_07 (§04 rate limiters, §05 polish + tests) on branch feat/iter-07-polish-tests.
+
+**Context:** Several forks the spec left unresolved.
+**Decision:**
+1. Extracted the slowapi `Limiter` from `main.py` into `app/core/rate_limit.py` (with a 429 `{"detail": "Rate limit exceeded"}` handler) so route modules can `@limiter.limit` without importing `main` — `main` imports the routes, so importing `limiter` from `main` would be circular.
+2. Disabled the limiter in `tests/conftest.py` (`limiter.enabled = False`). Under the in-process httpx client every request shares one rate-limit key, so the suite's repeated register/login calls would otherwise trip the 5/15min and 10/15min limits.
+3. Placed new Vitest files co-located as `src/**/*.test.ts` (repo convention) rather than the spec's `src/**/__tests__/` path. `graphLayout` spec items and most `graphStore` items already had coverage; only added the missing "userPositioned preserved through layout" case plus a new `chatService.test.ts`.
+4. Dashboard skeletons render only when `isLoading && sessions.length === 0`, so the "Load more" path doesn't wipe already-rendered cards with skeletons.
+5. Extended `sessionStore.fetchSessions(page?)` to append on page>1 and track `hasMore` in the store (plus `removeSessionLocal`/`restoreSession` for optimistic delete+undo), keeping all API access in the store layer per existing pattern.
+6. Scoped Vitest `include` to `src/**` so the Playwright `e2e/*.spec.ts` (which imports `@playwright/test`) isn't collected by `vitest`. The E2E test `test.skip`s without `E2E_ANTHROPIC_API_KEY` and assumes both servers are running.
+
+**Impact / Risk:** Low–moderate. Rate limiting is now enforced in non-test runs; the test disable keeps the existing suite green. No schema/migration changes. E2E selectors were written against the current UI and may need adjustment as the app evolves.
+
+**Outcome:** All ITER_07 §04/§05 items implemented. Tests/build not run per the agent-coding-contract hard rule (validation not explicitly requested).
+
+### Entry 006
+
+**Type:** Decision
+**Mode:** Autonomous
+**Timestamp:** 2026-05-29
+**Task:** Update README and create end-user manuals under docs.
+
+**Context:** The request specified "a folder under docs" without naming it, the file split, or the audience scope. README status block was stale (claimed skeleton/501 stubs) and used `npm` despite the project's `bun` convention.
+**Decision:**
+1. Created manuals at `docs/manual/` (sibling to `docs/planning/`), split into reader-task files: `README.md` (index), `getting-started.md`, `workspace.md`, `graph.md`, `account.md`, `faq.md`. Wrote them as end-user (not developer) docs, since "user manuals" implies the person using the app.
+2. README: replaced the "Skeleton scaffold / stubbed 501" status with a "Functional (ITER 01–07)" status plus a Features section; switched frontend/test commands from `npm` to `bun` (and added `test:e2e`); added a Documentation section pointing to `docs/manual/` and `/docs`.
+
+**Impact / Risk:** Docs-only; no code or config changed. Manual content reflects current behavior (nine dimensions, model list, rate limit, shortcuts) read from source; will need updates if the UI/flows change.
+**Outcome:** README updated; six manual files created under `docs/manual/`.

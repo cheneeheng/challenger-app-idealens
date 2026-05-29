@@ -62,6 +62,7 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
   applyGraphActions: (actions) => {
     let nodes = [...get().nodes];
     let edges = [...get().edges];
+    const updatedIds: string[] = [];
 
     for (const raw of actions) {
       const parsed = graphAction.safeParse(raw);
@@ -101,10 +102,12 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
                     ...n.data,
                     ...(p.label != null ? { label: p.label } : {}),
                     ...(p.content != null ? { content: p.content } : {}),
+                    justUpdated: true,
                   },
                 }
               : n
           );
+          updatedIds.push(p.id);
           break;
         }
         case "delete": {
@@ -125,6 +128,11 @@ export const useGraphStore = create<GraphStore>((set, get) => ({
     }
 
     set({ nodes: computeDagreLayout(nodes, edges), edges });
+
+    // Clear the highlight-pulse flag 2s after an update so the node settles.
+    for (const id of updatedIds) {
+      setTimeout(() => get().updateNode(id, { justUpdated: false }), 2000);
+    }
   },
 
   updateNode: (id, patch) =>

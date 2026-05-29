@@ -24,11 +24,12 @@ function scoreColor(score: number): string {
 // Custom React Flow node rendering one analysis finding. The dimension type is
 // read from data.type (the source of truth for display logic).
 export default function AnalysisNode({ data }: NodeProps) {
-  const { type, label, content, score } = data as AnalysisNodeData;
+  const { type, label, content, score, justUpdated } = data as AnalysisNodeData;
   const color = DIMENSION_COLORS[type] ?? "#888";
 
   return (
     <div
+      className={`analysis-node${justUpdated ? " node-updated" : ""}`}
       style={{
         borderTop: `4px solid ${color}`,
         border: "1px solid #ddd",
