@@ -4,9 +4,12 @@ from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import func, select
 
 from app.api.deps import CurrentUser, DbSession
+from app.db.models.message import Message
 from app.db.models.session import Session
 from app.schemas.session import (
     GraphStateUpdate,
+    MessageCreate,
+    MessageResponse,
     SessionCreate,
     SessionDetail,
     SessionListResponse,
@@ -117,3 +120,30 @@ async def update_graph(
     session = await _get_owned_session(session_id, user, db)
     session.graph_state = payload.graph_state
     await db.commit()
+
+
+@router.post(
+    "/{session_id}/messages",
+    response_model=MessageResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_message(
+    session_id: uuid.UUID, payload: MessageCreate, user: CurrentUser, db: DbSession
+) -> MessageResponse:
+    """Persist a single message (audit trail for manual graph edits). No LLM call."""
+    session = await _get_owned_session(session_id, user, db)
+    next_index = await db.scalar(
+        select(func.coalesce(func.max(Message.message_index), -1) + 1).where(
+            Message.session_id == session.id
+        )
+    )
+    message = Message(
+        session_id=session.id,
+        role=payload.role,
+        content=payload.content,
+        message_index=next_index or 0,
+    )
+    db.add(message)
+    await db.commit()
+    await db.refresh(message)
+    return MessageResponse.model_validate(message)

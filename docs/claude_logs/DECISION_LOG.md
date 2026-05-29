@@ -70,3 +70,46 @@ All other choices are localized and reversible.
 
 **Outcome:** Backend §03/§04/§06 and frontend §03/§05 implemented on branch
 `feat/iter-01-03-foundation`. Backend has no remaining 501 stubs.
+
+### Entry 003
+
+**Type:** Decision
+**Mode:** Autonomous
+**Timestamp:** 2026-05-29
+**Task:** Implement ITER_04–06 (workspace + chat, graph visualization, graph interactions)
+
+**Context:** Several points where the ITER specs diverged from the existing scaffold,
+repo conventions, or backend serialization reality, with no user resolution given.
+
+**Decision:**
+- **Zod schema location:** Kept the graph action Zod mirror in `src/lib/graphActions.ts`
+  (the location CLAUDE.md documents as authoritative and the existing file) rather than
+  creating ITER_05's literal `src/schemas/graph.ts`. Tightened it in place to match the
+  backend (DimensionType enum, `label` max 60, `score` 0–10 nullable, required `connect`
+  fields, `update` without `score`).
+- **Update-action nullability:** ITER_05 specs `label`/`content` as `.optional()`, but the
+  backend `model_dump(mode="json")` emits explicit `null` for fields the LLM leaves unset,
+  which `.optional()` rejects. Made them `.nullish()` and treat null as "no change" in
+  `applyGraphActions`, so real backend update actions validate instead of being skipped.
+- **Graph components dir:** Followed the plan's `src/components/graph/` for the graph
+  components (AnalysisNode, GraphToolbar, NodeDetailPanel, NodeContextMenu); relocated the
+  two pre-existing flat stubs (AnalysisNode, GraphToolbar) there for consistency.
+- **SessionCard idea excerpt:** ITER_04 §05.6 lists an "idea excerpt", but the backend
+  `SessionSummary` (list endpoint) does not return `idea` and §04 is out of scope this
+  iteration. Card shows name (which defaults to the truncated idea), model badge, and
+  relative timestamp instead — no backend change.
+- **ID generation:** Used the native `crypto.randomUUID()` for local message/node IDs
+  rather than adding a `uuid`/`nanoid` dependency (universal non-goal: no new deps).
+- **Shared chat input draft:** Added `draft`/`setDraft` to `chatStore` so the graph context
+  menu's "Ask Claude about this" can prefill `ChatInput` across panels.
+- **Skipped graphStore-stub step (ITER_04 §05.3):** Implemented the full ITER_05 graphStore
+  directly since both iterations are in scope; the stub would have been immediately replaced.
+
+**Impact / Risk:** Low. The nullish update-schema fix is the one functional correction
+beyond the literal spec; without it, single-field LLM updates would silently no-op.
+
+**Outcome:** Frontend §05 (ITER_04–06) and backend §04 (ITER_06 messages endpoint)
+implemented on branch `feat/iter-04-06-workspace-graph`. Tests written for the new
+backend endpoint and the core frontend logic (graphStore, graphLayout, chatStore, time).
+Per the contract, tests/type-check were not run — frontend `node_modules` and the backend
+`.venv` are not installed in this environment and execution was not requested.
