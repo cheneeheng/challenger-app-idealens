@@ -4,9 +4,11 @@ IdeaLens lets users submit any idea and receive a structured AI analysis visuali
 
 Users bring their own Anthropic API key (stored encrypted at rest).
 
+> This README is for people working in the codebase. If you just want to *use* IdeaLens, read the [user manual](docs/manual/README.md). If you want to *run or host* it, read the [deployment guide](docs/manual/deployment.md).
+
 ## Status
 
-Functional. The backend foundation, analysis engine, frontend workspace, graph visualization, graph interactions, and polish/tests (iterations 01–07) are implemented. See `docs/planning/` for the build plan and `docs/manual/` for end-user guides.
+Functional. The backend foundation, analysis engine, frontend workspace, graph visualization, graph interactions, and polish/tests (iterations 01–07) are implemented. See `docs/planning/` for the build plan.
 
 ## Features
 
@@ -32,65 +34,36 @@ Functional. The backend foundation, analysis engine, frontend workspace, graph v
 ```
 backend/        FastAPI service (app factory, models, schemas, routes, services, alembic)
 frontend/       React SPA (pages, layouts, components, Zustand stores)
-docs/planning/  Skeleton + iteration plans
+docs/manual/    End-user + operator guides (usage, deployment, testing)
+docs/planning/  Skeleton + iteration build plan
 docker-compose.yml   PostgreSQL for local dev
 ```
 
-## Prerequisites
+Architecture notes — the graph-action contract, backend layering, frontend route gating, and the per-user LLM flow — live in [`CLAUDE.md`](CLAUDE.md).
 
-- Python 3.12 and [`uv`](https://docs.astral.sh/uv/)
-- Node.js 20+
-- Docker (for the local PostgreSQL container)
+## Setup & running
 
-## Backend
+The full local + production setup (prerequisites, every environment variable, migrations, reverse-proxy/SSE notes) is documented once in the [deployment guide](docs/manual/deployment.md). The short version, from the repo root:
 
 ```bash
-cd backend
-uv venv && uv sync
-cp .env.example .env          # fill in the values below
-docker compose up -d          # from repo root: starts PostgreSQL
-alembic upgrade head
-uv run uvicorn app.main:app --reload --port 8000
+docker compose up -d                                           # PostgreSQL
+cd backend && uv venv && uv sync && cp .env.example .env        # fill in the values
+alembic upgrade head && uv run uvicorn app.main:app --reload --port 8000
+cd ../frontend && bun install && cp .env.example .env.local && bun run dev
 ```
 
-API docs at http://localhost:8000/docs, liveness at http://localhost:8000/health.
-
-### Environment variables
-
-| Name | Description |
-|------|-------------|
-| `DATABASE_URL` | Async PostgreSQL DSN (`postgresql+asyncpg://...`) |
-| `JWT_SECRET` | Secret for signing access tokens |
-| `API_KEY_ENCRYPTION_KEY` | Fernet key for encrypting Anthropic keys at rest |
-| `ENVIRONMENT` | `development` or `production`; `production` enables the `Secure` flag on the refresh-token cookie |
-| `FRONTEND_URLS` | Comma-separated allowed CORS origins |
-| `CONTEXT_WINDOW_MAX_MESSAGES` | Recent messages kept verbatim before summarization (default `20`) |
-
-Generate a Fernet key:
-
-```bash
-python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
-```
-
-## Frontend
-
-```bash
-cd frontend
-bun install
-cp .env.example .env.local    # VITE_API_URL=http://localhost:8000
-bun run dev                    # http://localhost:3000
-```
+Backend on http://localhost:8000 (docs at `/docs`, liveness at `/health`); frontend on http://localhost:3000.
 
 ## Tests
 
 ```bash
-cd backend && uv run pytest      # backend (pytest + httpx)
-cd frontend && bun run test      # frontend unit tests (vitest)
-cd frontend && bun run test:e2e  # frontend end-to-end (Playwright)
+scripts/run-tests.sh        # backend + frontend unit suites (from repo root)
 ```
+
+The end-to-end suite is skipped unless a real Anthropic key is provided. See the [testing guide](docs/manual/testing.md) for the test-database setup, the per-suite commands, and how to run the e2e flow.
 
 ## Documentation
 
-- `docs/manual/` — end-user guides (getting started, workspace, graph, account, FAQ).
-- `docs/planning/` — `SKELETON.md` plus `ITER_NN.md` build plan.
+- [`docs/manual/`](docs/manual/README.md) — usage, [deployment](docs/manual/deployment.md), and [testing](docs/manual/testing.md) guides.
+- `docs/planning/` — `SKELETON.md` plus the `ITER_NN.md` build plan.
 - API reference: http://localhost:8000/docs (OpenAPI) when the backend is running.
