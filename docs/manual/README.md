@@ -16,6 +16,8 @@ see the [project README](../../README.md).
 5. [FAQ & Troubleshooting](faq.md) — common questions and how to fix common problems.
 6. [Deployment & Running the App](deployment.md) — for operators: start the app locally, run it
    in production, and what every environment variable is for.
+7. [Running the Tests](testing.md) — for contributors: the three test suites, the one-command
+   runner, and why the end-to-end test is skipped by default.
 
 ## What you need
 

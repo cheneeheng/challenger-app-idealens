@@ -57,4 +57,4 @@ async def test_delete_account_requires_password(auth_client):
 
 async def test_routes_require_auth(client):
     resp = await client.get("/api/users/me")
-    assert resp.status_code == 403  # missing bearer credentials
+    assert resp.status_code == 401  # missing bearer credentials

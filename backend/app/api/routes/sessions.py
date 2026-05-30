@@ -105,7 +105,7 @@ async def update_session(
     if payload.selected_model is not None:
         session.selected_model = payload.selected_model
     await db.commit()
-    await db.refresh(session, attribute_names=["messages"])
+    await db.refresh(session, attribute_names=["updated_at", "messages"])
     return SessionDetail.model_validate(session)
 
 
